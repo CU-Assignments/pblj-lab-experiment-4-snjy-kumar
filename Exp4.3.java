@@ -32,7 +32,102 @@ Without synchronized, two threads might book the same seat simultaneously, causi
 
 🔹 Why Use Thread Priorities?
 Setting higher priority for VIP users ensures their bookings are processed first, simulating real-world priority-based bookings.
+=======================================================================================================================================================================================================
+class TicketBookingSystem {
+    private static final int TOTAL_SEATS = 5;
+    private static boolean[] seats = new boolean[TOTAL_SEATS];
 
+    public synchronized void bookSeat(String user, int seatNumber) {
+        if (seatNumber < 1 || seatNumber > TOTAL_SEATS) {
+            System.out.println("Invalid seat number!");
+            return;
+        }
+
+        if (seats[seatNumber - 1]) {
+            System.out.println(user + ": Seat " + seatNumber + " is already booked!");
+        } else {
+            seats[seatNumber - 1] = true;
+            System.out.println(user + " booked seat " + seatNumber);
+        }
+    }
+
+    public void displaySeats() {
+        System.out.println("\nBooking Status:");
+        for (int i = 0; i < TOTAL_SEATS; i++) {
+            if (seats[i]) {
+                System.out.println("Seat " + (i + 1) + " is booked.");
+            } else {
+                System.out.println("Seat " + (i + 1) + " is available.");
+            }
+        }
+    }
+}
+
+class BookingThread extends Thread {
+    private String user;
+    private int seatNumber;
+    private TicketBookingSystem system;
+
+    public BookingThread(String user, int seatNumber, TicketBookingSystem system) {
+        this.user = user;
+        this.seatNumber = seatNumber;
+        this.system = system;
+    }
+
+    @Override
+    public void run() {
+        system.bookSeat(user, seatNumber);
+    }
+}
+
+public class TicketBookingApp {
+    public static void main(String[] args) {
+        TicketBookingSystem system = new TicketBookingSystem();
+
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> System.out.println("Uncaught exception in thread " + t.getName() + ": " + e));
+
+        system.displaySeats();
+
+        BookingThread anish = new BookingThread("Anish (VIP)", 1, system);
+        anish.setPriority(Thread.MAX_PRIORITY); // VIP user with high priority
+        BookingThread bobby = new BookingThread("Bobby (Regular)", 2, system);
+        bobby.setPriority(Thread.NORM_PRIORITY); // Regular user with normal priority
+        BookingThread charlie = new BookingThread("Charlie (VIP)", 3, system);
+        charlie.setPriority(Thread.MAX_PRIORITY); // VIP user with high priority
+        BookingThread bobbyLow = new BookingThread("Bobby (Regular)", 4, system);
+        bobbyLow.setPriority(Thread.MIN_PRIORITY); // Low priority for regular user
+
+        anish.start();
+        bobby.start();
+        charlie.start();
+        bobbyLow.start();
+
+        try {
+            anish.join();
+            bobby.join();
+            charlie.join();
+            bobbyLow.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        system.displaySeats();
+
+        BookingThread bobby2 = new BookingThread("Bobby (Regular)", 1, system);
+        bobby2.start();
+        
+        BookingThread invalidUser = new BookingThread("Invalid User", 6, system);
+        invalidUser.start();
+
+        BookingThread newUser = new BookingThread("New User", 3, system);
+        newUser.start();
+        
+        system.displaySeats();
+    }
+}
+
+  
+=======================================================================================================================================================================================================
 Test Cases
 
 Test Case 1: No Seats Available Initially
