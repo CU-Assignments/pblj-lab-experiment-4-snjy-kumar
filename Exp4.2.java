@@ -24,7 +24,118 @@ Display All Cards → Show all stored cards.
 ArrayList: To store cards in an ordered manner.
 HashSet: To prevent duplicate cards.
 HashMap<String, List<Card>>: To organize cards based on suits for faster lookup.
+----------------------------------------------------------------------------------------------------------------
+  Code
+----------------------------------------------------------------------------------------------------------------
+ ====================================================================================================================
 
+  import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
+class Card {
+    String value;
+    String suit;
+
+    public Card(String value, String suit) {
+        this.value = value;
+        this.suit = suit;
+    }
+
+    @Override
+    public String toString() {
+        return value + " of " + suit;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Card card = (Card) obj;
+        return value.equals(card.value) && suit.equals(card.suit);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode() + suit.hashCode();
+    }
+}
+
+public class CardCollectionSystem {
+    
+    private static HashSet<Card> cardSet = new HashSet<>();
+    private static HashMap<String, List<Card>> suitMap = new HashMap<>();
+
+    public static void main(String[] args) {
+        addCard(new Card("Ace", "Spades"));
+        addCard(new Card("King", "Hearts"));
+        addCard(new Card("10", "Diamonds"));
+        addCard(new Card("5", "Clubs"));
+
+        displayAllCards();
+        findCardsBySuit("Hearts");
+        findCardsBySuit("Diamonds");
+
+        removeCard(new Card("10", "Diamonds"));
+        displayAllCards();
+        addCard(new Card("King", "Hearts"));
+    }
+
+    public static void addCard(Card card) {
+        if (cardSet.contains(card)) {
+            System.out.println("Error: Card \"" + card + "\" already exists.");
+        } else {
+            cardSet.add(card);
+            suitMap.computeIfAbsent(card.suit, k -> new ArrayList<>()).add(card);
+            System.out.println("Card added: " + card);
+        }
+    }
+
+    public static void findCardsBySuit(String suit) {
+        List<Card> cards = suitMap.get(suit);
+        if (cards == null || cards.isEmpty()) {
+            System.out.println("No cards found for " + suit + ".");
+        } else {
+            System.out.println("Cards of " + suit + ":");
+            for (Card card : cards) {
+                System.out.println(card);
+            }
+        }
+    }
+
+    public static void removeCard(Card card) {
+        if (cardSet.contains(card)) {
+            cardSet.remove(card);
+            suitMap.get(card.suit).remove(card);
+
+            if (suitMap.get(card.suit).isEmpty()) {
+                suitMap.remove(card.suit);
+            }
+
+            System.out.println("Card removed: " + card);
+        } else {
+            System.out.println("Card \"" + card + "\" not found.");
+        }
+    }
+
+    public static void displayAllCards() {
+        if (cardSet.isEmpty()) {
+            System.out.println("No cards found.");
+        } else {
+            System.out.println("All Cards:");
+            for (Card card : cardSet) {
+                System.out.println(card);
+            }
+        }
+    }
+}
+
+  
+  ===================================================================================================================
+  --------------------------------------------------------------------------------------------------------------------
+  -------------------------------------------------------------------------------------------------------------------
 
 Test Cases
 
